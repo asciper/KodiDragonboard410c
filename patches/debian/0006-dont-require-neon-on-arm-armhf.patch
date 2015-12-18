@@ -1,0 +1,25 @@
+From 6bdfdb2a5ea6f03a3ac69e15e1102fff9269bac4 Mon Sep 17 00:00:00 2001
+From: Ivan Popovic <ivan.popovic@seavus.com>
+Date: Thu, 10 Dec 2015 13:06:48 +0000
+Subject: [PATCH 06/15] dont require neon on arm armhf
+
+---
+ configure.ac | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/configure.ac b/configure.ac
+index e8c7e2f..826327d 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -650,7 +650,7 @@ case $host in
+      ARCH="arm"
+      use_arch="arm"
+      use_joystick=no
+-     use_neon=yes
++     use_neon=no
+      use_gles=yes
+      use_gl=no
+      use_wayland=no
+-- 
+2.1.4
+

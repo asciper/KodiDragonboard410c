@@ -1,0 +1,94 @@
+From 4a17ab438ee0c78259e90b89bb96238d527001b4 Mon Sep 17 00:00:00 2001
+From: Ivan Popovic <ivan.popovic@seavus.com>
+Date: Fri, 18 Dec 2015 13:07:26 +0000
+Subject: [PATCH 15/15] WIP - Hack for CVertexBuffer on aarch64
+
+---
+ xbmc/guilib/GUIFontCache.h   | 31 ++++++++++++++++++++++++++++++-
+ xbmc/guilib/GUIFontTTFGL.cpp | 13 ++++++++++---
+ 2 files changed, 40 insertions(+), 4 deletions(-)
+
+diff --git a/xbmc/guilib/GUIFontCache.h b/xbmc/guilib/GUIFontCache.h
+index 7cbe91d..b2e2524 100644
+--- a/xbmc/guilib/GUIFontCache.h
++++ b/xbmc/guilib/GUIFontCache.h
+@@ -229,6 +229,35 @@ struct CGUIFontCacheDynamicPosition
+   }
+ };
+ 
++#if defined (__aarch64__)
++struct CVertexBuffer
++{
++  unsigned int bufferHandle;
++  size_t size;
++  CVertexBuffer() : bufferHandle(0), size(0), m_font(NULL) {}
++  CVertexBuffer(unsigned int bufferHandle, size_t size, const CGUIFontTTFBase *font) : bufferHandle(bufferHandle), size(size), m_font(font) {}
++  CVertexBuffer(const CVertexBuffer &other) : bufferHandle(other.bufferHandle), size(other.size), m_font(other.m_font)
++  {
++    /* In practice, the copy constructor is only called before a vertex buffer
++     * has been attached. If this should ever change, we'll need another support
++     * function in GUIFontTTFGL/DX to duplicate a buffer, given its handle. */
++    assert(other.bufferHandle == 0);
++  }
++  CVertexBuffer &operator=(CVertexBuffer &other)
++  {
++    /* This is used with move-assignment semantics for initialising the object in the font cache */
++    assert(bufferHandle == 0);
++    bufferHandle = other.bufferHandle;
++    other.bufferHandle = 0;
++    size = other.size;
++    m_font = other.m_font;
++    return *this;
++  }
++  void clear();
++private:
++  const CGUIFontTTFBase *m_font;
++};
++#else
+ struct CVertexBuffer
+ {
+   void *bufferHandle;
+@@ -256,7 +285,7 @@ struct CVertexBuffer
+ private:
+   const CGUIFontTTFBase *m_font;
+ };
+-
++#endif /* __aarch64__ */
+ typedef CVertexBuffer CGUIFontCacheDynamicValue;
+ 
+ inline bool Match(const CGUIFontCacheDynamicPosition &a, const TransformMatrix &a_m,
+diff --git a/xbmc/guilib/GUIFontTTFGL.cpp b/xbmc/guilib/GUIFontTTFGL.cpp
+index 495c800..e0231f7 100644
+--- a/xbmc/guilib/GUIFontTTFGL.cpp
++++ b/xbmc/guilib/GUIFontTTFGL.cpp
+@@ -232,8 +232,12 @@ void CGUIFontTTFGL::LastEnd()
+       glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glMatrixModview.Get());
+ 
+       // Bind the buffer to the OpenGL context's GL_ARRAY_BUFFER binding point
+-      // FIXME workaround for aarch64 build
+-      glBindBuffer(GL_ARRAY_BUFFER, *((GLuint*) m_vertexTrans[i].vertexBuffer->bufferHandle));
++#if defined (__aarch64__)
++      glBindBuffer(GL_ARRAY_BUFFER, m_vertexTrans[i].vertexBuffer->bufferHandle);
++#else
++      glBindBuffer(GL_ARRAY_BUFFER, (GLuint) m_vertexTrans[i].vertexBuffer->bufferHandle);
++#endif /* __aarch64__ */
++
+ 
+       // Do the actual drawing operation, split into groups of characters no
+       // larger than the pre-determined size of the element array
+@@ -285,8 +289,11 @@ CVertexBuffer CGUIFontTTFGL::CreateVertexBuffer(const std::vector<SVertex> &vert
+   glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof (SVertex), &vertices[0], GL_STATIC_DRAW);
+   // Unbind GL_ARRAY_BUFFER
+   glBindBuffer(GL_ARRAY_BUFFER, 0);
+-
++#if defined (__aarch64__)
++  return CVertexBuffer(bufferHandle, vertices.size() / 4, this);
++#else
+   return CVertexBuffer((void *) bufferHandle, vertices.size() / 4, this);
++#endif /* __aarch64__ */
+ }
+ 
+ void CGUIFontTTFGL::DestroyVertexBuffer(CVertexBuffer &buffer) const
+-- 
+2.1.4
+

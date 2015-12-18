@@ -1,0 +1,35 @@
+From a259cc8572730566de1b79468b8466beb52659a0 Mon Sep 17 00:00:00 2001
+From: Ivan Popovic <ivan.popovic@seavus.com>
+Date: Mon, 14 Dec 2015 14:27:57 +0000
+Subject: [PATCH 10/15] Add default options for aarch64 host
+
+---
+ configure.ac | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
+
+diff --git a/configure.ac b/configure.ac
+index 8bba1a4..eba71c0 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -656,6 +656,18 @@ case $host in
+      use_wayland=no
+      USE_STATIC_FFMPEG=1
+      ;;
++  aarch64-unknown-linux-gnu)
++     target_platform=target_linux
++     ARCH="aarch64"
++     use_arch="aarch64"
++     use_cpu=cortex-a53
++     use_joystick=no
++     use_neon=yes
++     use_gles=yes
++     use_gl=yes
++     use_wayland=no
++     USE_STATIC_FFMPEG=1
++     ;;
+   arm*-*linux-android*)
+      target_platform=target_android
+      use_arch="arm"
+-- 
+2.1.4
+

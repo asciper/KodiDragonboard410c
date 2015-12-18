@@ -1,0 +1,25 @@
+From 7e512e0e95664365be8a1d69108fbc9e51eedba4 Mon Sep 17 00:00:00 2001
+From: Ivan Popovic <ivan.popovic@seavus.com>
+Date: Thu, 10 Dec 2015 13:04:46 +0000
+Subject: [PATCH 04/15] privacy
+
+---
+ system/settings/settings.xml | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/system/settings/settings.xml b/system/settings/settings.xml
+index 5ac282c..d4dc0f4 100644
+--- a/system/settings/settings.xml
++++ b/system/settings/settings.xml
+@@ -273,7 +273,7 @@
+       <group id="1">
+         <setting id="filelists.showparentdiritems" type="boolean" label="13306" help="36122">
+           <level>1</level>
+-          <default>true</default>
++          <default>false</default>
+           <control type="toggle" />
+         </setting>
+         <setting id="filelists.showextensions" type="boolean" label="497" help="36123">
+-- 
+2.1.4
+

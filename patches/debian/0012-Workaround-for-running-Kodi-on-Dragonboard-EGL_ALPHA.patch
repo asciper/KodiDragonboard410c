@@ -1,0 +1,28 @@
+From 382834aeb8695efc4fcfccb9071ba4829fb4ae84 Mon Sep 17 00:00:00 2001
+From: Ivan Popovic <ivan.popovic@seavus.com>
+Date: Tue, 15 Dec 2015 09:59:28 +0000
+Subject: [PATCH 12/15] Workaround for running Kodi on Dragonboard,
+ EGL_ALPHA_SIZE check is removed
+
+---
+ xbmc/windowing/X11/WinSystemX11.cpp | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/xbmc/windowing/X11/WinSystemX11.cpp b/xbmc/windowing/X11/WinSystemX11.cpp
+index 134c498..69e0b98 100644
+--- a/xbmc/windowing/X11/WinSystemX11.cpp
++++ b/xbmc/windowing/X11/WinSystemX11.cpp
+@@ -579,8 +579,10 @@ bool CWinSystemX11::IsSuitableVisual(XVisualInfo *vInfo)
+     return false;
+   if (!eglGetConfigAttrib(m_eglDisplay, config, EGL_BLUE_SIZE, &value) || value < 8)
+     return false;
++/* HACK: Disable checking of ALPHA_SIZE, it is 0 on freedreno
+   if (!eglGetConfigAttrib(m_eglDisplay, config, EGL_ALPHA_SIZE, &value) || value < 8)
+     return false;
++*/
+   if (!eglGetConfigAttrib(m_eglDisplay, config, EGL_DEPTH_SIZE, &value) || value < 24)
+     return false;
+  
+-- 
+2.1.4
+

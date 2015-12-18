@@ -1,0 +1,104 @@
+From 1e178f26681ef07538a3c5606f9ad66aea292812 Mon Sep 17 00:00:00 2001
+From: Ivan Popovic <ivan.popovic@seavus.com>
+Date: Tue, 15 Dec 2015 10:00:27 +0000
+Subject: [PATCH 13/15] Adding Debian brending logo
+
+---
+ addons/skin.confluence/media/from-debian-logo.png | Bin 0 -> 4217 bytes
+ 1 file changed, 0 insertions(+), 0 deletions(-)
+ create mode 100644 addons/skin.confluence/media/from-debian-logo.png
+
+diff --git a/addons/skin.confluence/media/from-debian-logo.png b/addons/skin.confluence/media/from-debian-logo.png
+new file mode 100644
+index 0000000000000000000000000000000000000000..e42694052f7fb63adfdeba48f2beb6209448d3b9
+GIT binary patch
+literal 4217
+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
+P00000NkvXXu0mjfOr;C<
+
+literal 0
+HcmV?d00001
+
+-- 
+2.1.4
+

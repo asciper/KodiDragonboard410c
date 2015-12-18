@@ -1,0 +1,87 @@
+From 569c4cfce2836acfb3e02b43d4e65f883480552a Mon Sep 17 00:00:00 2001
+From: Ivan Popovic <ivan.popovic@seavus.com>
+Date: Mon, 14 Dec 2015 14:30:27 +0000
+Subject: [PATCH 11/15] Disable Debian package releated defines and enable
+ aarch64 define in platform
+
+---
+ xbmc/Application.cpp         | 2 +-
+ xbmc/guilib/GUIFontTTFGL.cpp | 3 ++-
+ xbmc/linux/PlatformDefs.h    | 2 +-
+ xbmc/utils/SystemInfo.cpp    | 6 +++---
+ 4 files changed, 7 insertions(+), 6 deletions(-)
+
+diff --git a/xbmc/Application.cpp b/xbmc/Application.cpp
+index d270960..09a45e4 100644
+--- a/xbmc/Application.cpp
++++ b/xbmc/Application.cpp
+@@ -514,7 +514,7 @@ bool CApplication::Create()
+ //  specialVersion = " (version for XXXX)";
+ #endif
+   CLog::Log(LOGNOTICE, "Using %s %s x%d build%s", buildType.c_str(), CSysInfo::GetAppName().c_str(), g_sysinfo.GetXbmcBitness(), specialVersion.c_str());
+-  CLog::Log(LOGNOTICE, "%s compiled from " DEB_VERSION " by %s for %s %s %d-bit %s (%s)", g_infoManager.GetAppName().c_str(), g_sysinfo.GetUsedCompilerNameAndVer().c_str(), g_sysinfo.GetBuildTargetPlatformName().c_str(),
++  CLog::Log(LOGNOTICE, "%s compiled " __DATE__ " by %s for %s %s %d-bit %s (%s)", CSysInfo::GetAppName().c_str(), g_sysinfo.GetUsedCompilerNameAndVer().c_str(), g_sysinfo.GetBuildTargetPlatformName().c_str(),
+             g_sysinfo.GetBuildTargetCpuFamily().c_str(), g_sysinfo.GetXbmcBitness(), g_sysinfo.GetBuildTargetPlatformVersionDecoded().c_str(),
+             g_sysinfo.GetBuildTargetPlatformVersion().c_str());
+ 
+diff --git a/xbmc/guilib/GUIFontTTFGL.cpp b/xbmc/guilib/GUIFontTTFGL.cpp
+index d19a2e0..495c800 100644
+--- a/xbmc/guilib/GUIFontTTFGL.cpp
++++ b/xbmc/guilib/GUIFontTTFGL.cpp
+@@ -232,7 +232,8 @@ void CGUIFontTTFGL::LastEnd()
+       glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glMatrixModview.Get());
+ 
+       // Bind the buffer to the OpenGL context's GL_ARRAY_BUFFER binding point
+-      glBindBuffer(GL_ARRAY_BUFFER, (GLuint) m_vertexTrans[i].vertexBuffer->bufferHandle);
++      // FIXME workaround for aarch64 build
++      glBindBuffer(GL_ARRAY_BUFFER, *((GLuint*) m_vertexTrans[i].vertexBuffer->bufferHandle));
+ 
+       // Do the actual drawing operation, split into groups of characters no
+       // larger than the pre-determined size of the element array
+diff --git a/xbmc/linux/PlatformDefs.h b/xbmc/linux/PlatformDefs.h
+index 4350075..ff1a2cb 100644
+--- a/xbmc/linux/PlatformDefs.h
++++ b/xbmc/linux/PlatformDefs.h
+@@ -161,7 +161,7 @@
+ #define __int64   long long
+ #define __uint64  unsigned long long
+ 
+-#if defined(__x86_64__) || defined(__powerpc__) || defined(__ppc__) || defined (__arm__) || defined(__mips__) // should this be powerpc64 only?
++#if defined(__x86_64__) || defined(__powerpc__) || defined(__ppc__) || defined (__arm__) || defined (__aarch64__) || defined(__mips__) // should this be powerpc64 only?
+ #define __stdcall
+ #else /* !__x86_64__ */
+ #define __stdcall   __attribute__((__stdcall__))
+diff --git a/xbmc/utils/SystemInfo.cpp b/xbmc/utils/SystemInfo.cpp
+index b094850..555043d 100644
+--- a/xbmc/utils/SystemInfo.cpp
++++ b/xbmc/utils/SystemInfo.cpp
+@@ -436,7 +436,7 @@ bool CSysInfo::Save(TiXmlNode *settings) const
+ const std::string& CSysInfo::GetAppName(void)
+ {
+   assert(CCompileInfo::GetAppName() != NULL);
+-  static const std::string appName(StringUtils::Format("%s from Debian", CCompileInfo::GetAppName());
++  static const std::string appName(CCompileInfo::GetAppName());
+ 
+   return appName;
+ }
+@@ -1244,7 +1244,7 @@ std::string CSysInfo::GetVersionShort()
+   if (strlen(CCompileInfo::GetSuffix()) == 0)
+     return StringUtils::Format("%d.%d", CCompileInfo::GetMajor(), CCompileInfo::GetMinor());
+   else
+-    return StringUtils::Format("%d.%d-%s Debian package version:%s", CCompileInfo::GetMajor(), CCompileInfo::GetMinor(), CCompileInfo::GetSuffix(), DEB_VERSION);
++    return StringUtils::Format("%d.%d-%s", CCompileInfo::GetMajor(), CCompileInfo::GetMinor(), CCompileInfo::GetSuffix());
+ }
+ 
+ std::string CSysInfo::GetVersion()
+@@ -1254,7 +1254,7 @@ std::string CSysInfo::GetVersion()
+ 
+ std::string CSysInfo::GetBuildDate()
+ {
+-  return StringUtils::Format("%s", DEB_VERSION);
++  return StringUtils::Format("%d.%d-%s", CCompileInfo::GetMajor(), CCompileInfo::GetMinor(), CCompileInfo::GetSuffix());
+ }
+ 
+ bool CSysInfo::HasVideoToolBoxDecoder()
+-- 
+2.1.4
+

@@ -1,0 +1,39 @@
+From c7d6c94e295c88eb5ec0642e0791da2a73f95b81 Mon Sep 17 00:00:00 2001
+From: Ivan Popovic <ivan.popovic@seavus.com>
+Date: Thu, 10 Dec 2015 13:03:08 +0000
+Subject: [PATCH 02/15] reproducible build
+
+---
+ xbmc/Application.cpp      | 2 +-
+ xbmc/utils/SystemInfo.cpp | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/xbmc/Application.cpp b/xbmc/Application.cpp
+index 09a45e4..d270960 100644
+--- a/xbmc/Application.cpp
++++ b/xbmc/Application.cpp
+@@ -514,7 +514,7 @@ bool CApplication::Create()
+ //  specialVersion = " (version for XXXX)";
+ #endif
+   CLog::Log(LOGNOTICE, "Using %s %s x%d build%s", buildType.c_str(), CSysInfo::GetAppName().c_str(), g_sysinfo.GetXbmcBitness(), specialVersion.c_str());
+-  CLog::Log(LOGNOTICE, "%s compiled " __DATE__ " by %s for %s %s %d-bit %s (%s)", CSysInfo::GetAppName().c_str(), g_sysinfo.GetUsedCompilerNameAndVer().c_str(), g_sysinfo.GetBuildTargetPlatformName().c_str(),
++  CLog::Log(LOGNOTICE, "%s compiled from " DEB_VERSION " by %s for %s %s %d-bit %s (%s)", g_infoManager.GetAppName().c_str(), g_sysinfo.GetUsedCompilerNameAndVer().c_str(), g_sysinfo.GetBuildTargetPlatformName().c_str(),
+             g_sysinfo.GetBuildTargetCpuFamily().c_str(), g_sysinfo.GetXbmcBitness(), g_sysinfo.GetBuildTargetPlatformVersionDecoded().c_str(),
+             g_sysinfo.GetBuildTargetPlatformVersion().c_str());
+ 
+diff --git a/xbmc/utils/SystemInfo.cpp b/xbmc/utils/SystemInfo.cpp
+index d38502c..fc98c44 100644
+--- a/xbmc/utils/SystemInfo.cpp
++++ b/xbmc/utils/SystemInfo.cpp
+@@ -1254,7 +1254,7 @@ std::string CSysInfo::GetVersion()
+ 
+ std::string CSysInfo::GetBuildDate()
+ {
+-  return StringUtils::Format("%s", __DATE__);
++  return StringUtils::Format("%s", DEB_VERSION);
+ }
+ 
+ bool CSysInfo::HasVideoToolBoxDecoder()
+-- 
+2.1.4
+

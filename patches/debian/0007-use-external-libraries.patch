@@ -1,0 +1,120 @@
+From 3c2c19d104f0e65b2d8c48b5c3aa1b95d1b55ed4 Mon Sep 17 00:00:00 2001
+From: Ivan Popovic <ivan.popovic@seavus.com>
+Date: Thu, 10 Dec 2015 13:08:04 +0000
+Subject: [PATCH 07/15] use external libraries
+
+---
+ bootstrap.mk                                     | 2 +-
+ configure.ac                                     | 5 ++++-
+ lib/cximage-6.0/Makefile.in                      | 6 +++---
+ tools/depends/native/TexturePacker/Makefile      | 4 ++--
+ xbmc/DllPaths_generated.h.in                     | 1 +
+ xbmc/cores/dvdplayer/DVDInputStreams/DllDvdNav.h | 1 +
+ 6 files changed, 12 insertions(+), 7 deletions(-)
+
+diff --git a/bootstrap.mk b/bootstrap.mk
+index 29f7b7f..aecf7db 100644
+--- a/bootstrap.mk
++++ b/bootstrap.mk
+@@ -1,6 +1,6 @@
+ BOOTSTRAP_SUBDIRS += configure.ac
+ BOOTSTRAP_SUBDIRS += lib/cpluff/configure.ac
+-BOOTSTRAP_SUBDIRS += lib/gtest/configure.ac
++#BOOTSTRAP_SUBDIRS += lib/gtest/configure.ac
+ 
+ ifneq ($(wildcard lib/libdvd/libdvdcss/configure.ac),)
+ BOOTSTRAP_SUBDIRS += lib/libdvd/libdvdcss/configure.ac
+diff --git a/configure.ac b/configure.ac
+index 826327d..756e2b8 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -1193,7 +1193,9 @@ PKG_CHECK_MODULES([FREETYPE2],  [freetype2],
+ PKG_CHECK_MODULES([TAGLIB],  [taglib >= 1.8],
+   [INCLUDES="$INCLUDES $TAGLIB_CFLAGS"; LIBS="$LIBS $TAGLIB_LIBS"],
+   AC_MSG_ERROR($missing_library))
+-
++PKG_CHECK_MODULES([DVDREAD],  [dvdread],
++  [INCLUDES="$INCLUDES $DVDREAD_CFLAGS"; LIBS="$LIBS $DVDREAD_LIBS"],
++  AC_MSG_ERROR($missing_library))
+ if test "$use_optical_drive" = "yes"; then
+   PKG_CHECK_MODULES([CDIO],       [libcdio],
+     [INCLUDES="$INCLUDES $CDIO_CFLAGS"; LIBS="$LIBS $CDIO_LIBS"],
+@@ -1284,6 +1286,7 @@ fi
+ 
+ XB_FIND_SONAME([ASS],         [ass])
+ XB_FIND_SONAME([MPEG2],       [mpeg2])
++XB_FIND_SONAME([HDHOMERUN],   [hdhomerun])
+ 
+ # WebServer
+ if test "$use_webserver" = "yes"; then
+diff --git a/lib/cximage-6.0/Makefile.in b/lib/cximage-6.0/Makefile.in
+index 7f63e32..8c5c31f 100644
+--- a/lib/cximage-6.0/Makefile.in
++++ b/lib/cximage-6.0/Makefile.in
+@@ -4,8 +4,8 @@ SO=ImageLib-$(ARCH).so
+ ARCHIVE=$(SO:.so=.a)
+ SYSDIR=../../system
+ SLIB=$(SYSDIR)/$(SO)
+-DIRS=CxImage raw jbig
+-SLIBS=CxImage/cximage.a raw/raw.a jbig/jbig.a
++DIRS=CxImage raw
++SLIBS=CxImage/cximage.a raw/raw.a
+ 
+ ifeq ($(findstring osx,$(ARCH)), osx)
+ 	export ARCH
+@@ -21,7 +21,7 @@ ifeq ($(findstring osx,$(ARCH)), osx)
+ 		CxImage/*.o jasper/*/*.o jbig/*.o raw/*.o
+ else
+ 	$(CXX) $(CFLAGS) $(LDFLAGS) -shared -o $(SLIB) -Wl,--whole-archive $(SLIBS) \
+-		-Wl,--no-whole-archive -lpng -ljasper -ljpeg -ltiff -lz -Wl,--unresolved-symbols=ignore-all
++		-Wl,--no-whole-archive -ljbig -lpng -ljasper -ljpeg -ltiff -lz -Wl,--unresolved-symbols=ignore-all
+ endif
+ 
+ $(SLIBS): compile 
+diff --git a/tools/depends/native/TexturePacker/Makefile b/tools/depends/native/TexturePacker/Makefile
+index 26ea13e..d0c38d6 100644
+--- a/tools/depends/native/TexturePacker/Makefile
++++ b/tools/depends/native/TexturePacker/Makefile
+@@ -9,13 +9,13 @@ endif
+ 
+ ifeq ($(NATIVEPLATFORM),)
+   PLATFORM = native
+-  EXTRA_CONFIGURE = --enable-static
++#  EXTRA_CONFIGURE = --enable-static
+ else
+   PLATFORM = $(NATIVEPLATFORM)
+ endif
+ 
+ ifeq ($(NATIVE_OS), linux)
+-  EXTRA_CONFIGURE = --enable-static
++#  EXTRA_CONFIGURE = --enable-static
+ endif
+ ifeq ($(NATIVE_OS), android)
+   EXTRA_CONFIGURE = --enable-static
+diff --git a/xbmc/DllPaths_generated.h.in b/xbmc/DllPaths_generated.h.in
+index 5384a0b..5c13ce1 100644
+--- a/xbmc/DllPaths_generated.h.in
++++ b/xbmc/DllPaths_generated.h.in
+@@ -28,6 +28,7 @@
+ #define DLL_PATH_CPLUFF        "special://xbmcbin/system/libcpluff-@ARCH@.so"
+ #define DLL_PATH_IMAGELIB      "special://xbmcbin/system/ImageLib-@ARCH@.so"
+ #define DLL_PATH_LIBEXIF       "special://xbmcbin/system/libexif-@ARCH@.so"
++#define DLL_PATH_LIBHDHOMERUN  "@HDHOMERUN_SONAME@"
+ 
+ #define DLL_PATH_LIBRTMP       "@RTMP_SONAME@"
+ #define DLL_PATH_LIBNFS        "@NFS_SONAME@"
+diff --git a/xbmc/cores/dvdplayer/DVDInputStreams/DllDvdNav.h b/xbmc/cores/dvdplayer/DVDInputStreams/DllDvdNav.h
+index dcbf829..007b4c9 100644
+--- a/xbmc/cores/dvdplayer/DVDInputStreams/DllDvdNav.h
++++ b/xbmc/cores/dvdplayer/DVDInputStreams/DllDvdNav.h
+@@ -34,6 +34,7 @@ extern "C" {
+  #define HAVE_CONFIG_H
+  #endif
+ 
++ #include "xbmc/config.h"
+  #include "dvdnav/dvdnav_internal.h"
+  #include "dvdnav/vm.h"
+  #include "dvdnav/dvd_types.h"
+-- 
+2.1.4
+

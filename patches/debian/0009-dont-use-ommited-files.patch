@@ -1,0 +1,24 @@
+From bb07d7a38fcbc3c17cfe4872b3d049345e08ebff Mon Sep 17 00:00:00 2001
+From: Ivan Popovic <ivan.popovic@seavus.com>
+Date: Thu, 10 Dec 2015 13:09:42 +0000
+Subject: [PATCH 09/15] dont use ommited files
+
+---
+ configure.ac | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/configure.ac b/configure.ac
+index 756e2b8..8bba1a4 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -2403,7 +2403,6 @@ OUTPUT_FILES="Makefile \
+     tools/Linux/${APP_NAME_LC}-standalone.sh \
+     tools/Linux/${APP_NAME_LC}-xsession.desktop \
+     tools/EventClients/Makefile \
+-    tools/EventClients/Clients/OSXRemote/Makefile \
+     xbmc/peripherals/bus/Makefile \
+     xbmc/peripherals/devices/Makefile \
+     xbmc/android/activity/Makefile \
+-- 
+2.1.4
+

@@ -1,0 +1,27 @@
+From 9357d74750e2a829564e4d518bb9d79801b3b4dd Mon Sep 17 00:00:00 2001
+From: Ivan Popovic <ivan.popovic@seavus.com>
+Date: Mon, 23 Nov 2015 12:50:32 +0000
+Subject: [PATCH] Workaround - disable multiple jobs for make of ffmpeg
+
+---
+ tools/depends/target/ffmpeg/autobuild.sh | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/tools/depends/target/ffmpeg/autobuild.sh b/tools/depends/target/ffmpeg/autobuild.sh
+index b9bfd57..b64d419 100755
+--- a/tools/depends/target/ffmpeg/autobuild.sh
++++ b/tools/depends/target/ffmpeg/autobuild.sh
+@@ -162,7 +162,9 @@ CFLAGS="$CFLAGS" CXXFLAGS="$CXXFLAGS" LDFLAGS="$LDFLAGS" \
+ 	--enable-libdcadec \
+         ${FLAGS}
+ 
+-make -j ${BUILDTHREADS} 
++# WORKAROUND: Disable using more than one job for building
++#make -j ${BUILDTHREADS}
++make
+ if [ $? -eq 0 ]
+ then
+   [ ${SUDO} ] && echo "Root privileges are required to install to ${FFMPEG_PREFIX}"
+-- 
+2.1.4
+

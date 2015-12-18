@@ -1,0 +1,138 @@
+From 41dd5525c4e81ddf0d1331202737897d5e1f65ad Mon Sep 17 00:00:00 2001
+From: Ivan Popovic <ivan.popovic@seavus.com>
+Date: Fri, 18 Dec 2015 13:05:43 +0000
+Subject: [PATCH 14/15] Minor fixes for aarch64
+
+---
+ xbmc/Application.cpp                 |  2 +-
+ xbmc/threads/Atomics.cpp             | 10 +++++-----
+ xbmc/threads/Atomics.h               |  2 +-
+ xbmc/utils/CPUInfo.cpp               |  2 +-
+ xbmc/windows/GUIWindowSystemInfo.cpp |  8 ++++----
+ 5 files changed, 12 insertions(+), 12 deletions(-)
+
+diff --git a/xbmc/Application.cpp b/xbmc/Application.cpp
+index 09a45e4..76ed700 100644
+--- a/xbmc/Application.cpp
++++ b/xbmc/Application.cpp
+@@ -563,7 +563,7 @@ bool CApplication::Create()
+   CLog::Log(LOGNOTICE, "External storage path = %s; status = %s", extstorage.c_str(), extready ? "ok" : "nok");
+ #endif
+ 
+-#if defined(__arm__)
++#if defined(__arm__) || defined(__aarch64__)
+   if (g_cpuInfo.GetCPUFeatures() & CPU_FEATURE_NEON)
+     CLog::Log(LOGNOTICE, "ARM Features: Neon enabled");
+   else
+diff --git a/xbmc/threads/Atomics.cpp b/xbmc/threads/Atomics.cpp
+index c172867..6ebe43b 100644
+--- a/xbmc/threads/Atomics.cpp
++++ b/xbmc/threads/Atomics.cpp
+@@ -49,7 +49,7 @@ long cas(volatile long *pAddr, long expectedVal, long swapVal)
+     : "cc", "memory");                              /* Clobbers */
+   return prev;
+ 
+-#elif defined(__arm__)
++#elif defined(__arm__) || defined(__aarch64__)
+   long prev;
+   asm volatile (
+     "dmb      ish            \n" // Memory barrier. Make sure all memory accesses appearing before this complete before any that appear after
+@@ -171,7 +171,7 @@ long AtomicIncrement(volatile long* pAddr)
+     : "cc", "xer", "memory");
+   return val;
+ 
+-#elif defined(__arm__) && !defined(__ARM_ARCH_5__)
++#elif (defined(__arm__) || defined(__aarch64__)) && !defined(__ARM_ARCH_5__)
+   long val;
+   asm volatile (
+     "dmb      ish            \n" // Memory barrier. Make sure all memory accesses appearing before this complete before any that appear after
+@@ -246,7 +246,7 @@ long AtomicAdd(volatile long* pAddr, long amount)
+     : "cc", "memory");
+   return val;
+ 
+-#elif defined(__arm__) && !defined(__ARM_ARCH_5__)
++#elif (defined(__arm__) || defined(__aarch64__)) && !defined(__ARM_ARCH_5__)
+   long val;
+   asm volatile (
+     "dmb      ish           \n" // Memory barrier. Make sure all memory accesses appearing before this complete before any that appear after
+@@ -321,7 +321,7 @@ long AtomicDecrement(volatile long* pAddr)
+     : "cc", "xer", "memory");
+   return val;
+ 
+-#elif defined(__arm__)
++#elif defined(__arm__) || defined(__aarch64__)
+   long val;
+   asm volatile (
+     "dmb      ish           \n" // Memory barrier. Make sure all memory accesses appearing before this complete before any that appear after
+@@ -397,7 +397,7 @@ long AtomicSubtract(volatile long* pAddr, long amount)
+     : "cc", "memory");
+   return val;
+ 
+-#elif defined(__arm__)
++#elif defined(__arm__) || defined(__aarch64__)
+   long val;
+   asm volatile (
+     "dmb     ish            \n" // Memory barrier. Make sure all memory accesses appearing before this complete before any that appear after
+diff --git a/xbmc/threads/Atomics.h b/xbmc/threads/Atomics.h
+index 844c353..97399ee 100644
+--- a/xbmc/threads/Atomics.h
++++ b/xbmc/threads/Atomics.h
+@@ -23,7 +23,7 @@
+ 
+ // TODO: Inline these methods
+ long cas(volatile long *pAddr, long expectedVal, long swapVal);
+-#if !defined(__ppc__) && !defined(__powerpc__) && !defined(__arm__)
++#if !defined(__ppc__) && !defined(__powerpc__) && !defined(__arm__) && !defined(__aarch64__)
+ long long cas2(volatile long long* pAddr, long long expectedVal, long long swapVal);
+ #endif
+ long AtomicIncrement(volatile long* pAddr);
+diff --git a/xbmc/utils/CPUInfo.cpp b/xbmc/utils/CPUInfo.cpp
+index 660d355..5d4cf50 100644
+--- a/xbmc/utils/CPUInfo.cpp
++++ b/xbmc/utils/CPUInfo.cpp
+@@ -912,7 +912,7 @@ void CCPUInfo::ReadCPUFeatures()
+   #endif
+ #elif defined(LINUX)
+ // empty on purpose, the implementation is in the constructor
+-#elif !defined(__powerpc__) && !defined(__ppc__) && !defined(__arm__)
++#elif !defined(__powerpc__) && !defined(__ppc__) && !defined(__arm__) && !defined(__aarch64__)
+   m_cpuFeatures |= CPU_FEATURE_MMX;
+ #elif defined(__powerpc__) || defined(__ppc__)
+   m_cpuFeatures |= CPU_FEATURE_ALTIVEC;
+diff --git a/xbmc/windows/GUIWindowSystemInfo.cpp b/xbmc/windows/GUIWindowSystemInfo.cpp
+index 8941b87..bdf9b7d 100644
+--- a/xbmc/windows/GUIWindowSystemInfo.cpp
++++ b/xbmc/windows/GUIWindowSystemInfo.cpp
+@@ -139,7 +139,7 @@ void CGUIWindowSystemInfo::FrameMove()
+ #else
+     SetControlLabel(i++, "%s %s", 22024, SYSTEM_RENDER_VERSION);
+ #endif
+-#if !defined(__arm__) && !defined(HAS_DX)
++#if !defined(__arm__) && !defined(__aarch64__) && !defined(HAS_DX)
+     SetControlLabel(i++, "%s %s", 22010, SYSTEM_GPU_TEMPERATURE);
+ #endif
+   }
+@@ -148,17 +148,17 @@ void CGUIWindowSystemInfo::FrameMove()
+   {
+     SET_CONTROL_LABEL(40,g_localizeStrings.Get(20160));
+     SET_CONTROL_LABEL(i++, g_sysinfo.GetCPUModel());
+-#if defined(__arm__) && defined(TARGET_LINUX)
++#if (defined(__arm__) || defined(__aarch64__)) && defined(TARGET_LINUX)
+     SET_CONTROL_LABEL(i++, g_sysinfo.GetCPUBogoMips());
+     SET_CONTROL_LABEL(i++, g_sysinfo.GetCPUHardware());
+     SET_CONTROL_LABEL(i++, g_sysinfo.GetCPURevision());
+     SET_CONTROL_LABEL(i++, g_sysinfo.GetCPUSerial());
+ #endif
+     SetControlLabel(i++, "%s %s", 22011, SYSTEM_CPU_TEMPERATURE);
+-#if !defined(__arm__) || defined(TARGET_RASPBERRY_PI)
++#if (!defined(__arm__) && !defined(__aarch64__)) || defined(TARGET_RASPBERRY_PI)
+     SetControlLabel(i++, "%s %s", 13284, SYSTEM_CPUFREQUENCY);
+ #endif
+-#if !(defined(__arm__) && defined(TARGET_LINUX))
++#if !((defined(__arm__)|| defined(__aarch64__)) && defined(TARGET_LINUX))
+     SetControlLabel(i++, "%s %s", 13271, SYSTEM_CPU_USAGE);
+ #endif
+     i++;  // empty line
+-- 
+2.1.4
+

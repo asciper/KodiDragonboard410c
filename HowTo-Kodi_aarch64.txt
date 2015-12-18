@@ -1,0 +1,266 @@
+----------------------------------------------------------------------------
+									TOC
+----------------------------------------------------------------------------
+
+1. Introduction
+2. Requirements
+	2.1 Ubuntu
+	2.2 Debian
+3. Preparation
+	3.1 SD card
+	3.2 Linux
+4. Getting the source code
+5. Patching source code
+6. Installing the required libraries and headers
+7. How to compile
+8. How to run
+9. Uninstalling
+10. Known issues
+
+-----------------------------------------------------------------------------
+1. Introduction
+-----------------------------------------------------------------------------
+
+How-to for building and installing Kodi on DragonBoard 410c running linaro 
+Ubuntu 15.04 (Vivid Vervlet) and Debian 8.0 (jessie) linux. How-to is based 
+upon the README.linux from Kodi docs/README.linux. 
+
+The build is done on platform itself. Cross compiling is still work in progress.
+
+Due to Linaro strategy, Debian release is to become official linux distro 
+for Dragonboard 410c. Ubuntu does not have Kodi package available trough package
+manager, while Debian has it. This How-to covers installation for both linux 
+flavours, where accent is put on Debian. Currently, Kodi on Ubuntu can be 
+installed only from git.
+
+-----------------------------------------------------------------------------
+2. Requirements
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
+2.1 Patches
+-----------------------------------------------------------------------------
+Obtain patches from
+
+	$ git clone https://github.com/asciper/KodiDragonboard410c.git
+	
+-----------------------------------------------------------------------------
+2.1 Ubuntu
+-----------------------------------------------------------------------------
+Linaro Ubuntu image (Vivid 15.04 ALIP), SD card and WiFi are required.  
+-----------------------------------------------------------------------------
+2.2 Debian
+-----------------------------------------------------------------------------
+Linaro Debian image (jessie 8.0 ALIP) and WiFI for apt-get installation. 
+SD Card is required for Jarvis installation from git.
+-----------------------------------------------------------------------------
+
+NOTE:
+Minimal SD card size is 4GB. Recommended SD card size is 8GB. 
+We have used 16GB class 4 SD card.
+
+-----------------------------------------------------------------------------
+3. Preparation
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
+3.1 SD Card
+-----------------------------------------------------------------------------
+
+Create 2 (primary) partitions on SD card. First partition should be swap, 
+since DragonBoard does not have enough memory to build Kodi. Recommended swap
+size is 1GB. The rest of the SD card can be formated as an ext4 
+partition, which will be used for the source code and build.
+
+Insert SD card to DragonBoard 410c.
+
+-----------------------------------------------------------------------------
+3.2 Linux
+-----------------------------------------------------------------------------
+
+Install linux (if not already present) on DragonBoard 410c. The user guide is
+available at:
+
+https://github.com/96boards/documentation/blob/master/dragonboard410c/LinuxUserGuide_DragonBoard.pdf
+
+TIP: For convinience edit fstab to mount both partitions of the SD card 
+automatically.
+
+NOTE:
+
+Kodi was tested with following linaro images:
+
+(common for Debian and Ubuntu)
+bootloader - dragonboard410c_bootloader_emmc_linux-40.zip
+
+Ubuntu:
+boot - boot-linaro-vivid-qcom-snapdragon-arm64-20150930-102.img
+rootfs - linaro-vivid-alip-qcom-snapdragon-arm64-20150930-102.img
+
+Debian:
+boot - boot-linaro-jessie-qcom-snapdragon-arm64-20151208-37.img
+rootfs - linaro-jessie-alip-qcom-snapdragon-arm64-20151208-37.img
+
+-----------------------------------------------------------------------------
+4. Installation via apt-get (Debian only)
+-----------------------------------------------------------------------------
+	$ sudo apt-get install kodi
+	
+-----------------------------------------------------------------------------
+5. Installation from git (Kodi - Jarvis)
+-----------------------------------------------------------------------------	
+-----------------------------------------------------------------------------
+5.1. Getting the source code
+-----------------------------------------------------------------------------
+
+Install git-core with apt-get. 
+Obtain kodi soruce code from git.
+
+IMPORTANT:
+Source code of Kodi must be downloaded on SD card.
+
+	$ cd /<work_directory_on_SD_CARD>
+	$ git clone git://github.com/xbmc/xbmc.git kodi
+
+NOTE: 
+The Kodi version that was tested on Ubuntu was Jarvis beta 1 and Jarvis alpha 4.
+Checkout the correct branch:
+	$ cd /<work_directory_on_SD_CARD>/kodi
+	$ git checkout 16.0b1-Jarvis OR
+	$ git checkout 16.0a4-Jarvis
+	
+The Kodi version that was tested on Debian was Jarvis beta 1.	
+	$ git checkout 16.0b1-Jarvis
+	
+-----------------------------------------------------------------------------
+5.2 Patching source code (Ubuntu)
+-----------------------------------------------------------------------------
+Ubuntu patch is located in KodiDragonboard410c/patches/ubuntu.
+
+Copy patch in Kodi directory and apply it 0001-Patch-for-DragonBoard410c-Kodi-build.
+	$ git apply 0001-Patch-for-DragonBoard410c-Kodi-build
+	
+-----------------------------------------------------------------------------
+5.3 Patching source code (Debian)
+-----------------------------------------------------------------------------	
+Copy patches in Kodi directory and apply it. Please note that patches are still
+WIP (Work In Progress). New set of patches with how-to for building deb package
+will be added. 
+Current Debian set of patches is based on the patches from Isengard Kodi version
+available from apt-get. Some of the changes are temporary disabled, while the
+deb package creating how-to is not enabled.
+
+Debian patches are located in KodiDragonboard410c/patches/debian.
+Apply them using git apply.
+
+-----------------------------------------------------------------------------
+6. Installing the required libraries and headers
+-----------------------------------------------------------------------------
+
+You will then need the required libraries. The following is the list of packages
+that are used to build Kodi packages on Debian/Ubuntu (with all supported
+external libraries enabled).
+
+Build-Depends: autoconf, automake, autopoint, autotools-dev, ccache, cmake, curl,
+  default-jre, gawk, gperf, libao-dev, libasound2-dev,
+  libass-dev (>= 0.9.8), libavahi-client-dev, libavahi-common-dev, libbluetooth-dev,
+  libbluray-dev (>= 0.7.0), libboost-dev, libboost-thread-dev, libbz2-dev, libcap-dev, libcdio-dev,
+  libcec-dev, libcurl4-openssl-dev | libcurl4-gnutls-dev | libcurl-dev, libcwiid-dev,
+  libdbus-1-dev, libfontconfig-dev, libfreetype6-dev, libfribidi-dev,
+  libgif-dev (>= 4.1.6), libgl1-mesa-dev | libgl-dev, libglew-dev, libglu1-mesa-dev | libglu-dev,
+  libiso9660-dev, libjasper-dev, libjpeg-dev, libltdl-dev, liblzo2-dev, libmicrohttpd-dev,
+  libmodplug-dev, libmpcdec-dev, libmpeg2-4-dev, libmysqlclient-dev, libnfs-dev, libogg-dev,
+  libpcre3-dev, libplist-dev, libpng12-dev | libpng-dev, libpulse-dev, librtmp-dev,libsdl2-dev,
+  libsmbclient-dev, libsqlite3-dev, libssh-dev, libssl-dev, libswscale-dev,
+  libtag1-dev (>= 1.8), libtiff-dev, libtinyxml-dev (>= 2.6.2), libtool, libudev-dev,
+  libusb-dev, libva-dev, libvdpau-dev, libvorbis-dev, libxinerama-dev, libxml2-dev,
+  libxmu-dev, libxrandr-dev, libxslt1-dev, libxt-dev, libyajl-dev (>=2.0), lsb-release,
+  nasm [!amd64], python-dev, python-imaging, python-support, swig, unzip, uuid-dev, yasm,
+  zip, zlib1g-dev
+
+[IMPORTANT NOTICE] 
+
+(common for Debian and Ubuntu)
+* dcadec-dev
+Library is not available through Ubuntu/Debian repositories. To install it, checkout source from:
+
+	$ git clone https://github.com/foo86/dcadec dcadec
+
+	$ cd dcadec
+	$ make
+	$ sudo make install
+
+
+* crossguid / libcrossguid-dev
+Kodi now requires crossguid which is not available in Ubuntu repositories at this time.
+Kodi supplies a Makefile in tools/depends/target/crossguid
+to make it easy to install into /usr/local.
+
+    $ make -C tools/depends/target/crossguid PREFIX=/usr/local
+    
+OR install latest from git:
+
+Downalod latest source from git:
+	$ git clone https://github.com/graeme-hill/crossguid.git
+Copy Makefile from Kodi directory tools/depends/target/crossguid
+    $ make PREFIX=/usr/local
+
+DEBIAN:
+* libshairplay-dev 
+Not available with apt-get, not needed for the build
+
+* groovy
+Install with apt-get
+
+* libdvdread-dev
+Install with apt-get
+
+* libhdhomerun-dev
+Install with apt-get
+
+-----------------------------------------------------------------------------
+7. How to compile
+-----------------------------------------------------------------------------
+
+To create the Kodi executable manually perform these steps:
+	$ ./bootstrap
+
+	$ ./configure --disable-vaapi --disable-vdpau
+
+	$ make
+
+NOTE: 
+- Build takes ~4 hours
+- Using more than 2 jobs for build can cause platform overheating
+
+	$ sudo make install
+
+Will install Kodi in default location.
+
+-----------------------------------------------------------------------------
+8. How to run
+-----------------------------------------------------------------------------
+
+Just type the following:
+
+    $ kodi --debug
+
+Enjoy :)
+
+-----------------------------------------------------------------------------
+9. Uninstalling
+-----------------------------------------------------------------------------
+
+Prepend "sudo" to commands, if your user doesn't have write permission to the install directory.
+
+    $ make uninstall
+    $ sudo make uninstall
+
+If you would like to also remove any settings and 3rd party addons (skins, scripts, etc)
+you should also run:
+
+.1  $ rm -rf ~/.kodi
+
+-----------------------------------------------------------------------------
+10. Known issues
+-----------------------------------------------------------------------------
+
+EOF

@@ -1,0 +1,64 @@
+From 5fed999006697137683ff53261fdd3c70e59555e Mon Sep 17 00:00:00 2001
+From: Ivan Popovic <ivan.popovic@seavus.com>
+Date: Thu, 10 Dec 2015 13:06:02 +0000
+Subject: [PATCH 05/15] differentiate from vanilla Kodi
+
+---
+ addons/skin.confluence/720p/Home.xml | 12 ++++++++++++
+ xbmc/utils/SystemInfo.cpp            |  6 +++---
+ 2 files changed, 15 insertions(+), 3 deletions(-)
+
+diff --git a/addons/skin.confluence/720p/Home.xml b/addons/skin.confluence/720p/Home.xml
+index 9ac8edc..2e544eb 100644
+--- a/addons/skin.confluence/720p/Home.xml
++++ b/addons/skin.confluence/720p/Home.xml
+@@ -19,6 +19,18 @@
+ 			<animation effect="slide" time="200" condition="Window.Previous(Home)">WindowOpen</animation>
+ 			<animation effect="slide" time="200" condition="Window.Next(Home)">WindowClose</animation>
+ 		</control>
++		<control type="image">
++			<description>LOGO2</description>
++			<left>118</left>
++			<top>9</top>
++			<width>125</width>
++			<height>41</height>
++			<aspectratio aligny="top" align="left">keep</aspectratio>
++			<texture>from-debian-logo.png</texture>
++			<include>VisibleFadeEffect</include>
++			<include>Window_OpenClose_Animation</include>
++			<visible>!Skin.HasSetting(homepageWeatherinfo)</visible>
++		</control>
+ 		<!-- Music Info -->
+ 		<control type="group">
+ 			<depth>DepthMenu</depth>
+diff --git a/xbmc/utils/SystemInfo.cpp b/xbmc/utils/SystemInfo.cpp
+index fc98c44..b094850 100644
+--- a/xbmc/utils/SystemInfo.cpp
++++ b/xbmc/utils/SystemInfo.cpp
+@@ -436,7 +436,7 @@ bool CSysInfo::Save(TiXmlNode *settings) const
+ const std::string& CSysInfo::GetAppName(void)
+ {
+   assert(CCompileInfo::GetAppName() != NULL);
+-  static const std::string appName(CCompileInfo::GetAppName());
++  static const std::string appName(StringUtils::Format("%s from Debian", CCompileInfo::GetAppName());
+ 
+   return appName;
+ }
+@@ -1244,12 +1244,12 @@ std::string CSysInfo::GetVersionShort()
+   if (strlen(CCompileInfo::GetSuffix()) == 0)
+     return StringUtils::Format("%d.%d", CCompileInfo::GetMajor(), CCompileInfo::GetMinor());
+   else
+-    return StringUtils::Format("%d.%d-%s", CCompileInfo::GetMajor(), CCompileInfo::GetMinor(), CCompileInfo::GetSuffix());
++    return StringUtils::Format("%d.%d-%s Debian package version:%s", CCompileInfo::GetMajor(), CCompileInfo::GetMinor(), CCompileInfo::GetSuffix(), DEB_VERSION);
+ }
+ 
+ std::string CSysInfo::GetVersion()
+ {
+-  return GetVersionShort() + " Git:" + CCompileInfo::GetSCMID();
++  return GetVersionShort() + " Git: (unknown)";
+ }
+ 
+ std::string CSysInfo::GetBuildDate()
+-- 
+2.1.4
+
